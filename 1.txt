@@ -1,0 +1,186 @@
+source $VIMRUNTIME/vimrc_example.vim
+source $VIMRUNTIME/mswin.vim
+behave mswin
+
+set diffexpr=MyDiff()
+function MyDiff()
+  let opt = '-a --binary '
+  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+  let arg1 = v:fname_in
+  if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+  let arg2 = v:fname_new
+  if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+  let arg3 = v:fname_out
+  if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+  if $VIMRUNTIME =~ ' '
+    if &sh =~ '\<cmd'
+      if empty(&shellxquote)
+        let l:shxq_sav = ''
+        set shellxquote&
+      endif
+      let cmd = '"' . $VIMRUNTIME . '\diff"'
+    else
+      let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
+    endif
+  else
+    let cmd = $VIMRUNTIME . '\diff'
+  endif
+  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
+  if exists('l:shxq_sav')
+    let &shellxquote=l:shxq_sav
+  endif
+endfunction
+
+
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+"设置Vundle的运行路径并初始化
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" Vundle安装位置与插件路径不同时，需要Vundle插件的路径
+"call vundle#begin('~/some/path/here')
+"------------------要安装的插件不能写在此行前！------------------
+
+"Vundle对自己的调用，不可删去
+Plugin 'VundleVim/Vundle.vim'
+
+"以下是所支持的各种不同格式的示例
+"需要安装的插件应写在调用的vundle#begin和vundle#end之间
+
+"如果插件托管在Github上，写在下方，只写作者名/项目名就行了
+Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+Plugin 'Valloric/YouCompleteMe'
+"如果插件来自vim-scripts(官方)，写插件名就行了
+" Plugin 'L9'
+
+"如果Git仓库不在Github上，需要提供完整的链接
+" Plugin 'git://git.wincent.com/command-t.git'
+
+"本地的插件需要提供文件路径
+" Plugin 'file:///home/gmarik/path/to/plugin'
+"一定要确保插件就在提供路径的文件夹中(没有子文件夹，直接在这层目录下)
+
+"运行时目录的路径
+"Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+
+"避免插件间的命名冲突
+"Plugin 'ascenator/L9', {'name': 'newL9'}
+
+"------------------要安装的插件不能写在此行后！------------------
+call vundle#end()            " required
+filetype plugin indent on    " required
+"要忽略插件缩进更改，请改用：
+"filetype plugin on
+"
+" 安装插件的相关指令
+":PluginList			- 列出已安装插件
+":PluginInstall			- 安装新添加的插件;添加`!`或使用`:PluginUpdate`来更新已安装插件
+":PluginSearch xxx		- 寻找名字带有xxx的插件;添加`!`刷新本地缓存
+":PluginClean			- 删除已经从列表移除的插件;添加`!`静默卸载
+":h						- 帮助和说明文档 
+"Vundle的设置到此为止了
+
+
+"-------------------------插件设置-------------------------
+"NERDTree设置(插件)
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
+map <C-n> :NERDTreeToggle<CR>
+let NERDTreeAutoCenter=1 						"光标始终在视野内
+let NERDTreeShowHidden=1						"显示隐藏文件
+let NERDTreeIgnore=['\.pyc','\~$','\.swp']		"忽略临时文件的显示
+let g:nerdtree_flag=1							"用于标记NERDTree窗口开关状态
+"nerdtree-tabs设置（插件）
+let g:nerdtree_tabs_open_on_console_startup=1	"终端启动vim时打开
+let g:nerdtree_tabs_smart_startup_focus=2		"切换焦点到文件窗口
+"let g:nerdtree_tabs_autofind=0					"不在NERDTree定位文件位置
+"let g:nerdtree_tabs_synchronize_view=0			"多个窗口间不同步NERDtree
+let g:nerdtree_tabs_open_on_new_tab=0			"打开新标签不创建新窗口
+let g:nerdtree_tabs_focus_on_files=1
+"nerdtree-git-plugin设置(插件)
+let g:NERDTreeIndicatorMapCustom = {
+    \ "Modified"  : "✹",
+    \ "Staged"    : "✚",
+    \ "Untracked" : "✭",
+    \ "Renamed"   : "➜",
+    \ "Unmerged"  : "═",
+    \ "Deleted"   : "✖",
+    \ "Dirty"     : "✗",
+    \ "Clean"     : "✔︎",
+    \ "Unknown"   : "?"
+    \ }
+"
+
+"NERDTree设置(插件)
+let g:NERDTreeFileExtensionHighlightFullName = 1
+let g:NERDTreeExactMatchHighlightFullName = 1
+let g:NERDTreePatternMatchHighlightFullName = 1
+let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
+let g:NERDTreeHighlightFoldersFullName = 1 " highlights the folder name
+
+
+
+"YouCompleteMe设置(插件)
+"配置文件位置：
+let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/.ycm_extra_conf.py'
+set completeopt=longest,menu				"让Vim的补全菜单行为与一般IDE一致(参考VimTip1230)
+autocmd InsertLeave * if pumvisible() == 0|pclose|endif		"离开插入模式后自动关闭预览窗口
+"改变上下选择补全项的快捷键：Ctrl+j向上，Ctrl+k向下
+inoremap <expr> <C-j>      pumvisible() ? "\<C-n>" : "\<Down>"
+inoremap <expr> <C-k>      pumvisible() ? "\<C-p>" : "\<Up>"
+let g:ycm_min_num_of_chars_for_completion=1	"输入一个字母后就自动补全
+let g:ycm_seed_identifiers_with_syntax=1	"开启语义补全(标准库可不加std::前缀)
+let g:ycm_cache_omnifunc=0					"禁止缓存匹配项,每次都重新生成匹配项
+let g:ycm_complete_in_comments=1			"在注释输入中也能补全
+let g:ycm_complete_in_strings=1			"在字符串输入中也能补全
+let g:ycm_show_diagnostics_ui=1			"启用ycm自带的syntastic插件
+"不开启自动补全的文件类型：
+let g:ycm_filetype_blacklist = {
+      \ 'tagbar' : 1,
+      \ 'nerdtree' : 1,
+	  \ 'qf' : 1,
+      \ 'notes' : 1,
+      \ 'markdown' : 1,
+      \ 'unite' : 1,
+      \ 'text' : 1,
+      \ 'vimwiki' : 1,
+      \ 'gitcommit' : 1,
+      \}
+"
+
+
+
+
+
+"-------------------------本地设置-------------------------
+set number				"显示行号
+set softtabstop=4 shiftwidth=4	"设置Tab制表符为4格
+set tabstop=4			"设置缩进距离为4格（一个Tab）
+set ruler				"右下角显示行号
+set invautoindent		"禁止与上一行相同的自动缩进
+set incsearch			"查找时自动跳转到匹配的当前输入（敲回车前）
+set hlsearch			"高亮匹配的查找结果
+set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1	"字符编码
+set hidden				"光标间切换不需要保存
+syntax on				"开启语法高亮
+set encoding=utf-8
+set clipboard=unnamed
+
+
+
+" Ctrl + HJKL for arrow keys - Moved To HammerSpoon
+" inoremap <c-h> <left>
+" inoremap <c-j> <down>
+" inoremap <c-k> <up>
+" inoremap <c-l> <right>
+"在窗口之间切换
+let mapleader = ' '
+noremap <Leader>h <c-w>h
+noremap <Leader>j <c-w>j
+noremap <Leader>k <c-w>k
